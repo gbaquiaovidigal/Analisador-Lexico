@@ -1,0 +1,2 @@
+INSTRUÇÕES PARA EXECUTAR O COMPILADOR:
+-Para executar o compilador, abra a IDE NetBeans, vá em abrir projeto e procure pelo projeto "PascalPortuga", para executara interface do compilador, execute o a classe, Interface.java.

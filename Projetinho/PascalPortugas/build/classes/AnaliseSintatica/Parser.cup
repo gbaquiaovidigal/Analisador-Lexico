@@ -1,0 +1,132 @@
+package AnaliseSintatica;
+import java.io.*;
+import java_cup.runtime.*;
+import AnaliseSintatica.Yylex;
+
+parser code {:
+
+    public void report_error(String message, Object info)  {
+        System.out.println("Warning - " + message);
+    }
+    public void syntax_error(Symbol s){
+            report_error("Erro sintatico na sentença. Linha: " +(s.right + 1) +
+            " - Coluna: " + s.left + ". Texto: \"" + s.value + "\"", null);
+            // public static void carregar(String arquivo) throws Exception{
+            // new parser(new Yylex(new FileInputStream(arquivo))).parse();
+            String retorno = "Erro sintatico na senteca. Linha: " +(s.right + 1) +" - Coluna: " + s.left + ". Texto: \"" + s.value + "\"\n";
+        it.setRetornoLexico(retorno);
+    }
+
+    public void report_fatal_error(String message, Object info)  {
+        System.out.println("Error - " + message);
+    }
+
+:};
+
+//Simbolos terminais são todos os tokens que são retornados.
+//Simbolos não terminais são os simbolos que derivam outros simbolos
+terminal       algoritmo, inicio, fim, var, atribui, entrada, declaravari;
+terminal       abrepar, fechapar, relaciona, operaciona, valor;
+terminal       fimdelinha, pontofinal, se, entao, enquanto, faca, senao;
+terminal       ate, saida, repita, p_int, p_str, p_real;
+terminal       igual, virgula, doispontos;
+
+non terminal START, CONTEUDO, DECLARAVARIAVEL, ATRIBUIVALORVARIAVEL, CONDICAO, CONDICAO2, CONTEUDOCONDICAO, CONTEUDOIFWHILE, CONTEUDOREPITA, ENTRADASAIDA;
+
+
+//START VAI LER APENAS UMA LINHA OU BASEADO NA REGRA VAI LER MAIS DE UMA 
+
+start with START; 
+
+START ::= algoritmo | algoritmo inicio fim pontofinal | algoritmo var fimdelinha inicio fim pontofinal 
+        | algoritmo var fimdelinha inicio CONTEUDO fim pontofinal 
+        | algoritmo var fimdelinha DECLARAVARIAVEL inicio CONTEUDO fim pontofinal;
+
+//tudo que pode ser usado na linguagem
+CONTEUDO ::=  ATRIBUIVALORVARIAVEL | CONDICAO | ENTRADASAIDA
+
+            | ATRIBUIVALORVARIAVEL ENTRADASAIDA CONDICAO ENTRADASAIDA
+
+            | ATRIBUIVALORVARIAVEL  CONDICAO ENTRADASAIDA
+
+            | ATRIBUIVALORVARIAVEL CONDICAO CONDICAO ;
+
+CONDICAO ::=  se abrepar CONTEUDOCONDICAO fechapar entao CONTEUDOIFWHILE 
+            | se abrepar CONTEUDOCONDICAO fechapar entao CONTEUDOIFWHILE senao CONTEUDOIFWHILE
+
+            | enquanto abrepar CONTEUDOCONDICAO fechapar faca CONTEUDOIFWHILE
+
+            | repita CONTEUDOREPITA ate abrepar CONTEUDOCONDICAO fechapar fimdelinha;
+
+CONDICAO2 ::=   se abrepar CONTEUDOCONDICAO fechapar entao CONTEUDOIFWHILE
+                se abrepar CONTEUDOCONDICAO fechapar entao CONTEUDOIFWHILE
+                se abrepar CONTEUDOCONDICAO fechapar entao CONTEUDOIFWHILE;
+
+
+//conteudo de teste do if e while
+CONTEUDOCONDICAO ::= var relaciona var | var relaciona valor | valor relaciona var | valor relaciona valor
+                   | var igual var | var igual valor | valor igual var | valor igual valor; 
+
+//conteudoIF (conteudo que pode ir dentro da estrutura if)
+CONTEUDOIFWHILE ::=   inicio fim fimdelinha
+                    | inicio ATRIBUIVALORVARIAVEL fim fimdelinha
+                    | inicio ENTRADASAIDA fim fimdelinha
+
+                    | inicio CONDICAO2 ATRIBUIVALORVARIAVEL fim fimdelinha;
+
+//conteudorepita (conteudo que pode ir dentro da estrutura repita)
+CONTEUDOREPITA ::=  ATRIBUIVALORVARIAVEL ENTRADASAIDA;
+
+//declarando as variaveis no inicio do programa
+DECLARAVARIAVEL ::= declaravari var doispontos p_int fimdelinha
+                  | declaravari var virgula var doispontos p_int fimdelinha
+                  | declaravari var virgula var virgula var doispontos p_int fimdelinha
+                  | declaravari var virgula var virgula var virgula var doispontos p_int fimdelinha
+                  | declaravari var doispontos p_str fimdelinha
+                  | declaravari var virgula var doispontos p_str fimdelinha
+                  | declaravari var virgula var virgula var doispontos p_str fimdelinha
+                  | declaravari var doispontos p_real fimdelinha
+                  | declaravari var virgula var doispontos p_real fimdelinha
+                  | declaravari var virgula var virgula var doispontos p_real fimdelinha
+                  | declaravari var doispontos p_int fimdelinha declaravari var doispontos p_str fimdelinha
+                  | declaravari var doispontos p_str fimdelinha declaravari var doispontos p_int fimdelinha
+                  | declaravari var doispontos p_int fimdelinha declaravari var doispontos p_real fimdelinha
+                  | declaravari var doispontos p_real fimdelinha declaravari var doispontos p_int fimdelinha
+                  | declaravari var doispontos p_str fimdelinha declaravari var doispontos p_real fimdelinha
+                  | declaravari var doispontos p_real fimdelinha declaravari var doispontos p_str fimdelinha;
+
+
+// Atribuir valor a variável dentro do conteudo
+ATRIBUIVALORVARIAVEL ::= var atribui var fimdelinha 
+                       | var atribui valor fimdelinha
+                       | var atribui var operaciona var fimdelinha
+                       | var atribui var operaciona valor fimdelinha 
+                       | var atribui valor operaciona var fimdelinha
+
+                       | var atribui var operaciona var fimdelinha var atribui var operaciona valor fimdelinha 
+
+                       | var atribui valor fimdelinha var atribui valor fimdelinha var atribui valor fimdelinha  
+                       
+                       | var atribui var operaciona valor fimdelinha var atribui var operaciona var fimdelinha var atribui var operaciona valor fimdelinha
+
+                       | var atribui valor fimdelinha var atribui valor fimdelinha var atribui valor fimdelinha var atribui valor fimdelinha;
+                   
+//entrada e saida
+ENTRADASAIDA ::= entrada abrepar var fechapar fimdelinha
+               | saida abrepar var fechapar fimdelinha
+               | entrada abrepar var var fechapar fimdelinha
+               | saida abrepar var var fechapar fimdelinha
+               |entrada abrepar var var var fechapar fimdelinha
+               | saida abrepar var var var fechapar fimdelinha
+               |entrada abrepar var var var var fechapar fimdelinha
+               | saida abrepar var var var var fechapar fimdelinha
+               |entrada abrepar var var var var var fechapar fimdelinha
+               | saida abrepar var var var var var fechapar fimdelinha
+               |entrada abrepar var var var var var var fechapar fimdelinha
+               | saida abrepar var var var var var var fechapar fimdelinha
+               |entrada abrepar var var var var var var var fechapar fimdelinha
+               | saida abrepar var var var var var var var fechapar fimdelinha;
+
+
+                    
+

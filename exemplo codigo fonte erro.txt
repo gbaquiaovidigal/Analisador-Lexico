@@ -1,0 +1,16 @@
+INICIO_PROGRAMA fatorial ;
+
+VARIAVEL res , num : INTEIRO;
+
+INICIODDD
+res := 1;
+ENTRADA(num);
+HHHH
+ENQUANTO num > 1 FACA
+INICIO
+res := res * num ;
+num := num -1
+FIM;
+
+SAIDA(res)
+FIM.
